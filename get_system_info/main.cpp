@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <psapi.h>
 #include <d3d12.h>
-#include <TCHAR.h>
+#include <tchar.h>
 #include <pdh.h>
 
 static PDH_HQUERY cpuQuery;
@@ -120,8 +120,7 @@ int main(void)
 	DWORD aProcesses[1024], cbNeeded, cProcesses;
 	unsigned int i;
 
-	if (!EnumProcesses(aProcesses, sizeof(aProcesses), &cbNeeded))
-	{
+	if (!EnumProcesses(aProcesses, sizeof(aProcesses), &cbNeeded)) {
 		return 1;
 	}
 
@@ -132,8 +131,8 @@ int main(void)
 	for (i = 0; i < cProcesses; i++)
 	{
 		printf("\n\tGetting info for the %dth process\n", i);
-		double processTime = getSystemInfoForProcessCPUTimesCurrentValue()
-		printf("\tCPU Time: %d\n", processTime );
+		double processTime = getSystemInfoForProcessCPUTimesCurrentValue();
+		printf("\tCPU Time: %f\n", processTime);
 		ProcessInfo(aProcesses[i]);
 	}
 
