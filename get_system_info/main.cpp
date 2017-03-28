@@ -41,14 +41,14 @@ void initSystemInfoForProcessCPUTimes()
 	memcpy(&lastUserCPU, &fuser, sizeof(FILETIME));
 }
 
-double getSystemInfoForProcessCPUTimesCurrentValue() 
+double getSystemInfoForProcessCPUTimesCurrentValue(HANDLE hProcess) 
 {
 	FILETIME ftime, fsys, fuser;
 	ULARGE_INTEGER now, sys, user;
 	double percent;
 	GetSystemTimeAsFileTime(&ftime);
 	memcpy(&now, &ftime, sizeof(FILETIME));
-	GetProcessTimes(self, &ftime, &ftime, &fsys, &fuser);
+	GetProcessTimes(hProcess, &ftime, &ftime, &fsys, &fuser);
 	memcpy(&sys, &fsys, sizeof(FILETIME));
 	memcpy(&user, &fuser, sizeof(FILETIME));
 	percent = (sys.QuadPart - lastSysCPU.QuadPart) +
@@ -63,7 +63,6 @@ double getSystemInfoForProcessCPUTimesCurrentValue()
 
 // To ensure correct resolution of symbols, add Psapi.lib to TARGETLIBS
 // and compile with -DPSAPI_VERSION=1
-
 void ProcessInfo(DWORD processID)
 {
 	HANDLE hProcess;
@@ -85,6 +84,9 @@ void ProcessInfo(DWORD processID)
 		printf("\tProcess Path: %s\n", path);
 		// At this point, buffer contains the full path to the executable
 	}
+
+	double processTime = getSystemInfoForProcessCPUTimesCurrentValue(hProcess);
+	printf("\tCPU Time: %f\n", processTime);
 
 	if (GetProcessMemoryInfo(hProcess, &pmc, sizeof(pmc)))
 	{
@@ -130,9 +132,7 @@ int main(void)
 	// Print the info for each process
 	for (i = 0; i < cProcesses; i++)
 	{
-		printf("\n\tGetting info for the %dth process\n", i);
-		double processTime = getSystemInfoForProcessCPUTimesCurrentValue();
-		printf("\tCPU Time: %f\n", processTime);
+		printf("\n\tGetting info for the %dth process\n", i);		
 		ProcessInfo(aProcesses[i]);
 	}
 
