@@ -72,15 +72,14 @@ void ProcessInfo(DWORD processID)
 	}
 
 	TCHAR path[MAX_PATH];
-	if (GetModuleFileNameEx(hProcess, 0, path, MAX_PATH))
-	{
+	if (GetModuleFileNameEx(hProcess, 0, path, MAX_PATH)) {
 		printf("\t\t\tPath: %s\n", path);
 	}
 
 	ProcessTimes(hProcess);
 
-	if (GetProcessMemoryInfo(hProcess, &pmc, sizeof(pmc)))
-	{
+	if (GetProcessMemoryInfo(hProcess, &pmc, sizeof(pmc))) {
+
 		printf("\tPageFaultCount:            \t0x%08X\t(%d)\n", pmc.PageFaultCount, pmc.PageFaultCount);
 		printf("\tPeakWorkingSetSize:        \t0x%08X\t(%d)\n", pmc.PeakWorkingSetSize, pmc.PeakWorkingSetSize);
 		printf("\tWorkingSetSize:            \t0x%08X\t(%d)\n", pmc.WorkingSetSize, pmc.WorkingSetSize);
@@ -106,8 +105,7 @@ void ProcessInfo(DWORD processID)
 void GetAndPrintSystemInfo() 
 {
 	GetSystemInfo(&sysInfo);
-	printf(
-		"\n \
+	printf("\n \
 		\tSystem Info:\n \
 		\tOEM ID: %lu\n \
 		\tProcessor Architecture: %u\n \
@@ -139,8 +137,7 @@ void GetAndPrintGlobalMemoryInfo()
 {
 	globalMemoryInfo.dwLength = sizeof(MEMORYSTATUSEX);
 	GlobalMemoryStatusEx(&globalMemoryInfo);
-	printf(
-		"\n \
+	printf("\n \
 		\tGlobal Memory Info:\n \
 		\tLength: %lu\n \
 		\tMemory Load: %lu\n \
