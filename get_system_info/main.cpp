@@ -5,13 +5,14 @@
 #include <tchar.h>
 #include <pdh.h>
 
+static SYSTEM_INFO sysInfo;
+static FILETIME fileTime;
+static MEMORYSTATUSEX globalMemoryInfo;
 static PDH_HQUERY cpuQuery;
 static PDH_HCOUNTER cpuTotal;
+static ULARGE_INTEGER now;
 
-static ULARGE_INTEGER lastCPU, lastSysCPU, lastUserCPU;
-static int numProcessors;
-static HANDLE self;
-
+/*
 void initPdhStuff() 
 {
 	PdhOpenQuery(NULL, NULL, &cpuQuery);
@@ -26,57 +27,48 @@ double getPdhStuffCurrentValue()
 	PdhGetFormattedCounterValue(cpuTotal, PDH_FMT_DOUBLE, NULL, &counterVal);
 	return counterVal.doubleValue;
 }
+*/
 
-void initSystemInfoForProcessCPUTimes() 
+void GetAndPrintSystemTimeAsFileTime()
 {
-	SYSTEM_INFO sysInfo;
-	FILETIME ftime, fsys, fuser;
-	GetSystemInfo(&sysInfo);
-	numProcessors = sysInfo.dwNumberOfProcessors;
-	GetSystemTimeAsFileTime(&ftime);
-	memcpy(&lastCPU, &ftime, sizeof(FILETIME));
-	self = GetCurrentProcess();
-	GetProcessTimes(self, &ftime, &ftime, &fsys, &fuser);
-	memcpy(&lastSysCPU, &fsys, sizeof(FILETIME));
-	memcpy(&lastUserCPU, &fuser, sizeof(FILETIME));
+	GetSystemTimeAsFileTime(&fileTime);
+	printf(
+		"\n\
+		\tSystem Time as File Time:\n \
+		\tLow: %ld\n \
+		\tHigh: %ld\n \
+		\n", 
+		fileTime.dwLowDateTime, 
+		fileTime.dwHighDateTime);
 }
 
-double getSystemInfoForProcessCPUTimesCurrentValue(HANDLE hProcess) 
+void ProcessTimes(HANDLE hProcess)
 {
-	FILETIME ftime, fsys, fuser;
-	ULARGE_INTEGER now, sys, user;
-	double percent;
-	GetSystemTimeAsFileTime(&ftime);
-	memcpy(&now, &ftime, sizeof(FILETIME));
-	GetProcessTimes(hProcess, &ftime, &ftime, &fsys, &fuser);
+	FILETIME fsys, fuser;
+	ULARGE_INTEGER sys, user;
+	GetSystemTimeAsFileTime(&fileTime);
+	GetProcessTimes(hProcess, &fileTime, &fileTime, &fsys, &fuser);
+	memcpy(&now, &fileTime, sizeof(FILETIME));
 	memcpy(&sys, &fsys, sizeof(FILETIME));
 	memcpy(&user, &fuser, sizeof(FILETIME));
-	percent = (sys.QuadPart - lastSysCPU.QuadPart) +
-		(user.QuadPart - lastUserCPU.QuadPart);
-	percent /= (now.QuadPart - lastCPU.QuadPart);
-	percent /= numProcessors;
-	lastCPU = now;
-	lastUserCPU = user;
-	lastSysCPU = sys;
-	return percent * 100;
 }
 
-// To ensure correct resolution of symbols, add Psapi.lib to TARGETLIBS
-// and compile with -DPSAPI_VERSION=1
 void ProcessInfo(DWORD processID)
 {
 	HANDLE hProcess;
 	PROCESS_MEMORY_COUNTERS pmc;
 
 	// Print the process identifier.
-	printf("\tProcess ID: %u\n", processID);
+	printf("\t\t\tProcess ID: %u\n", processID);
 
 	// Print information about the process.
 	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processID);
 	if (NULL == hProcess) {
-		printf("\tFailed to open handle to %u\n", processID);
+		printf("\t\t\tFailed to open handle to %u\n", processID);
 		return;
 	}
+
+	ProcessTimes(hProcess);
 
 	TCHAR path[MAX_PATH];
 	if (GetModuleFileNameEx(hProcess, 0, path, MAX_PATH))
@@ -84,9 +76,6 @@ void ProcessInfo(DWORD processID)
 		printf("\tProcess Path: %s\n", path);
 		// At this point, buffer contains the full path to the executable
 	}
-
-	double processTime = getSystemInfoForProcessCPUTimesCurrentValue(hProcess);
-	printf("\tCPU Time: %f\n", processTime);
 
 	if (GetProcessMemoryInfo(hProcess, &pmc, sizeof(pmc)))
 	{
@@ -101,7 +90,8 @@ void ProcessInfo(DWORD processID)
 			pmc.QuotaPeakNonPagedPoolUsage, pmc.QuotaPeakNonPagedPoolUsage);
 		printf("\tQuotaNonPagedPoolUsage:    \t0x%08X\t(%d)\n",
 			pmc.QuotaNonPagedPoolUsage, pmc.QuotaNonPagedPoolUsage);
-		printf("\tPagefileUsage:             \t0x%08X\t(%d)\n", pmc.PagefileUsage, pmc.PagefileUsage);
+		printf("\tPagefileUsage:             \t0x%08X\t(%d)\n", 
+			pmc.PagefileUsage, pmc.PagefileUsage);
 		printf("\tPeakPagefileUsage:         \t0x%08X\t(%d)\n",
 			pmc.PeakPagefileUsage, pmc.PeakPagefileUsage);
 	} else {
@@ -111,28 +101,94 @@ void ProcessInfo(DWORD processID)
 	CloseHandle(hProcess);
 }
 
-int main(void)
+void GetAndPrintSystemInfo() 
 {
-	MEMORYSTATUSEX memInfo;
-	memInfo.dwLength = sizeof(MEMORYSTATUSEX);
-	GlobalMemoryStatusEx(&memInfo);
-	DWORDLONG totalVirtualMem = memInfo.ullTotalPageFile;
+	GetSystemInfo(&sysInfo);
+	printf(
+		"\n \
+		\tSystem Info:\n \
+		\tOEM ID: %ld\n \
+		\tProcessor Architecture: %d\n \
+		\tPage Size: %ld\n \
+		\tMinimum Application Address: 0x%016llx\n \
+		\tMaximum Application Address: 0x%016llx\n \
+		\tActive Processor Mask: %ld\n \
+		\tNumber of Processors: %ld\n \
+		\tAllocation Granularity: %ld\n \
+		\tProcessor Type: %ld\n \
+		\tProcessor Level: %d\n \
+		\tProcessor Revision: %d\n \
+		\n",
+		sysInfo.dwOemId,
+		sysInfo.wProcessorArchitecture,
+		sysInfo.dwPageSize,
+		sysInfo.lpMinimumApplicationAddress,
+		sysInfo.lpMaximumApplicationAddress,
+		sysInfo.dwActiveProcessorMask,
+		sysInfo.dwNumberOfProcessors,
+		sysInfo.dwAllocationGranularity,
+		sysInfo.dwProcessorType,
+		sysInfo.wProcessorLevel,
+		sysInfo.wProcessorRevision
+	);
+}
+
+void GetAndPrintGlobalMemoryInfo()
+{
+	globalMemoryInfo.dwLength = sizeof(MEMORYSTATUSEX);
+	GlobalMemoryStatusEx(&globalMemoryInfo);
+	printf(
+		"\n \
+		\tGlobal Memory Info:\n \
+		\tLength: %ld\n \
+		\tMemory Load: %ld\n \
+		\tTotal Physical: %llu\n \
+		\tAvailable Physical: %llu\n \
+		\tTotal Page File: %llu\n \
+		\tAvailable Page File: %llu\n \
+		\tTotal Virtual: %llu\n \
+		\tAvailable Virtual: %llu\n \
+		\tAvailable Extended Virtual: %llu\n \
+		\n",
+		globalMemoryInfo.dwLength,
+		globalMemoryInfo.dwMemoryLoad,
+		globalMemoryInfo.ullTotalPhys,
+		globalMemoryInfo.ullAvailPhys,
+		globalMemoryInfo.ullTotalPageFile,
+		globalMemoryInfo.ullAvailPageFile,
+		globalMemoryInfo.ullTotalVirtual,
+		globalMemoryInfo.ullAvailVirtual,
+		globalMemoryInfo.ullAvailExtendedVirtual
+	);
+}
+
+int main(void)
+{	
+	// Get the System Time as File Time
+	GetAndPrintSystemTimeAsFileTime();
+
+	// Print System Info	
+	GetAndPrintSystemInfo();
+
+	// Print Global Memory Info
+	GetAndPrintGlobalMemoryInfo();
+
+	//	initPdhStuff();
+
+	printf("\n\t\t\tCollecting Process Info\n\n");
+
+	DWORD aProcesses[1024], cbNeeded, cProcesses;
 
 	// Get the list of process identifiers
-	DWORD aProcesses[1024], cbNeeded, cProcesses;
-	unsigned int i;
-
 	if (!EnumProcesses(aProcesses, sizeof(aProcesses), &cbNeeded)) {
-		return 1;
+		return 1; // error result
 	}
 
 	// Calculate how many process identifiers were returned.
 	cProcesses = cbNeeded / sizeof(DWORD);
 
-	// Print the info for each process
-	for (i = 0; i < cProcesses; i++)
-	{
-		printf("\n\tGetting info for the %dth process\n", i);		
+	for (int i = 0; i < cProcesses; i++) {
+		printf("\n\t\t\tInfo for the %dth process\n", i);		
 		ProcessInfo(aProcesses[i]);
 	}
 
