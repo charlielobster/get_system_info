@@ -32,7 +32,7 @@ void GetAndPrintSystemTimeAsFileTime()
 {
 	GetSystemTimeAsFileTime(&fileTime);
 	printf(
-		"\tSystem As File Time:\t\tLow: %lu\t\t\tHigh: %lu\n", 
+		"\tSystem As File Time: Low: %lu     \t\tHigh: %lu\n", 
 		fileTime.dwLowDateTime, 
 		fileTime.dwHighDateTime);
 }
@@ -42,10 +42,11 @@ void ProcessTimes(HANDLE hProcess)
 	FILETIME creationTime, exitTime, kernelTime, userTime;
 	GetProcessTimes(hProcess, &creationTime, &exitTime, &kernelTime, &userTime);
 	printf(
-		"\t\t\tCreation Time\t\tLow: %lu\t\t\tHigh: %lu\n \
-		\tExit Time\t\tLow: %lu\t\t\tHigh: %lu\n \
-		\tKernel Time\t\tLow: %lu\t\t\tHigh: %lu\n \
-		\tUser Time\t\tLow: %lu\t\t\tHigh: %lu\n \
+		"\n\t    \
+		Creation Time:        Low: %lu\t\tHigh: %lu\n\t \
+		Exit Time             Low: %lu\t\tHigh: %lu\n\t \
+		Kernel Time           Low: %lu\t\tHigh: %lu\n\t \
+		User Time             Low: %lu\t\tHigh: %lu\n \
 		\n",
 		creationTime.dwLowDateTime, 
 		creationTime.dwHighDateTime,
@@ -81,15 +82,16 @@ void ProcessInfo(DWORD processID)
 	if (GetProcessMemoryInfo(hProcess, &pmc, sizeof(pmc))) {
 
 		printf(
-			"\t\t\tPage Fault Count:    %lu\n \
-			Peak Working Set Size:        %lu\n \
-			Working Set Size:            %lu\n \
-			Quota Peak Paged Pool Usage:   %lu\n \
-			Quota Paged Pool Usage:       %lu\n \
-			Quota Peak Non Paged Pool Usage:%lu\n \
-			Quota Non Paged Pool Usage:    %lu\n \
-			Pagefile Usage:             %lu\n \
-			Peak Pagefile Usage : %lu\n \
+			"\n\t    \
+            Page Fault Count:                %lu\n \
+			Peak Working Set Size:           %lu\n \
+			Working Set Size:                %lu\n \
+			Quota Peak Paged Pool Usage:     %lu\n \
+			Quota Paged Pool Usage:          %lu\n \
+			Quota Peak Non Paged Pool Usage: %lu\n \
+			Quota Non Paged Pool Usage:      %lu\n \
+			Pagefile Usage:                  %lu\n \
+			Peak Pagefile Usage:             %lu\n \
 			\n",
 			pmc.PageFaultCount,
 			pmc.PeakWorkingSetSize,
@@ -113,17 +115,17 @@ void GetAndPrintSystemInfo()
 	GetSystemInfo(&sysInfo);
 	printf("\n \
 		\tSystem Info:\n \
-		\tOEM ID: %lu\n \
-		\tProcessor Architecture: %u\n \
-		\tPage Size: %lu\n \
+		\tOEM ID:                      %lu\n \
+		\tProcessor Architecture:      %u\n \
+		\tPage Size:                   %lu\n \
 		\tMinimum Application Address: 0x%016llx\n \
 		\tMaximum Application Address: 0x%016llx\n \
-		\tActive Processor Mask: %lu\n \
-		\tNumber of Processors: %lu\n \
-		\tAllocation Granularity: %lu\n \
-		\tProcessor Type: %lu\n \
-		\tProcessor Level: %u\n \
-		\tProcessor Revision: %u\n \
+		\tActive Processor Mask:       %lu\n \
+		\tNumber of Processors:        %lu\n \
+		\tAllocation Granularity:      %lu\n \
+		\tProcessor Type:              %lu\n \
+		\tProcessor Level:             %u\n \
+		\tProcessor Revision:          %u\n \
 		\n",
 		sysInfo.dwOemId,
 		sysInfo.wProcessorArchitecture,
@@ -145,14 +147,14 @@ void GetAndPrintGlobalMemoryInfo()
 	GlobalMemoryStatusEx(&globalMemoryInfo);
 	printf("\n \
 		\tGlobal Memory Info:\n \
-		\tLength: %lu\n \
-		\tMemory Load: %lu\n \
-		\tTotal Physical: %llu\n \
-		\tAvailable Physical: %llu\n \
-		\tTotal Page File: %llu\n \
-		\tAvailable Page File: %llu\n \
-		\tTotal Virtual: %llu\n \
-		\tAvailable Virtual: %llu\n \
+		\tLength:                     %lu\n \
+		\tMemory Load:                %lu\n \
+		\tTotal Physical:             %llu\n \
+		\tAvailable Physical:         %llu\n \
+		\tTotal Page File:            %llu\n \
+		\tAvailable Page File:        %llu\n \
+		\tTotal Virtual:              %llu\n \
+		\tAvailable Virtual:          %llu\n \
 		\tAvailable Extended Virtual: %llu\n \
 		\n",
 		globalMemoryInfo.dwLength,
