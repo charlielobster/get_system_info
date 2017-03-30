@@ -80,21 +80,27 @@ void ProcessInfo(DWORD processID)
 
 	if (GetProcessMemoryInfo(hProcess, &pmc, sizeof(pmc))) {
 
-		printf("\tPageFaultCount:            \t0x%08X\t(%d)\n", pmc.PageFaultCount, pmc.PageFaultCount);
-		printf("\tPeakWorkingSetSize:        \t0x%08X\t(%d)\n", pmc.PeakWorkingSetSize, pmc.PeakWorkingSetSize);
-		printf("\tWorkingSetSize:            \t0x%08X\t(%d)\n", pmc.WorkingSetSize, pmc.WorkingSetSize);
-		printf("\tQuotaPeakPagedPoolUsage:   \t0x%08X\t(%d)\n",
-			pmc.QuotaPeakPagedPoolUsage, pmc.QuotaPeakPagedPoolUsage);
-		printf("\tQuotaPagedPoolUsage:       \t0x%08X\t(%d)\n",
-			pmc.QuotaPagedPoolUsage, pmc.QuotaPagedPoolUsage);
-		printf("\tQuotaPeakNonPagedPoolUsage:\t0x%08X\t(%d)\n",
-			pmc.QuotaPeakNonPagedPoolUsage, pmc.QuotaPeakNonPagedPoolUsage);
-		printf("\tQuotaNonPagedPoolUsage:    \t0x%08X\t(%d)\n",
-			pmc.QuotaNonPagedPoolUsage, pmc.QuotaNonPagedPoolUsage);
-		printf("\tPagefileUsage:             \t0x%08X\t(%d)\n", 
-			pmc.PagefileUsage, pmc.PagefileUsage);
-		printf("\tPeakPagefileUsage:         \t0x%08X\t(%d)\n",
-			pmc.PeakPagefileUsage, pmc.PeakPagefileUsage);
+		printf(
+			"\t\t\tPage Fault Count:    %lu\n \
+			Peak Working Set Size:        %lu\n \
+			Working Set Size:            %lu\n \
+			Quota Peak Paged Pool Usage:   %lu\n \
+			Quota Paged Pool Usage:       %lu\n \
+			Quota Peak Non Paged Pool Usage:%lu\n \
+			Quota Non Paged Pool Usage:    %lu\n \
+			Pagefile Usage:             %lu\n \
+			Peak Pagefile Usage : %lu\n \
+			\n",
+			pmc.PageFaultCount,
+			pmc.PeakWorkingSetSize,
+			pmc.WorkingSetSize,
+			pmc.QuotaPeakPagedPoolUsage,
+			pmc.QuotaPagedPoolUsage,
+			pmc.QuotaPeakNonPagedPoolUsage,
+			pmc.QuotaNonPagedPoolUsage,
+			pmc.PagefileUsage,
+			pmc.PeakPagefileUsage);
+
 	} else {
 		printf("\tFailed to get process memory info for %u\n", processID);
 	}
