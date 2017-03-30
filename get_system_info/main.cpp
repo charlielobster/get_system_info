@@ -83,7 +83,7 @@ void ProcessInfo(DWORD processID)
 
 		printf(
 			"\n\t    \
-            Page Fault Count:                %lu\n \
+			Page Fault Count:                %lu\n \
 			Peak Working Set Size:           %lu\n \
 			Working Set Size:                %lu\n \
 			Quota Peak Paged Pool Usage:     %lu\n \
